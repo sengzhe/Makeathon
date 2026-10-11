@@ -142,3 +142,18 @@
 {"out": "props/PR-01_newspaper_turn_03_v1.png", "attempt": 2, "error": null, "seconds": 111}
 {"out": "props/PR-18_burned_vehicle_v1.png", "attempt": 1, "error": "missing output", "seconds": 308}
 {"out": "props/PR-18_burned_vehicle_v1.png", "attempt": 2, "error": "missing output", "seconds": 306}
+{"out": "backgrounds/BG-06_ground_plate-no-blade_v1.png", "attempt": 1, "error": null, "seconds": 82}
+{"out": "backgrounds/BG-06_ground_L5-grass-blade_v1.png", "attempt": 1, "error": null, "seconds": 101}
+{"out": "hands/HD-K2_sight-picture_v1.png", "attempt": 1, "error": null, "seconds": 104}
+{"out": "props/PR-18_burned_vehicle_v1.png", "attempt": 1, "error": null, "seconds": 110}
+{"out": "props/PR-14_jacket-chest_secured_v1.png", "attempt": 1, "error": null, "seconds": 110}
+{"out": "effects/FX-24_crow-parts_v1.png", "attempt": 1, "error": null, "seconds": 117}
+{"out": "props/PR-20_crater_bowl_02_v1.png", "attempt": 1, "error": null, "seconds": 122}
+{"out": "hands/HD-K6_sleeve-strip-left_v1.png", "attempt": 1, "error": null, "seconds": 123}
+{"out": "hands/HD-K4_hand-left-flat-press_v1.png", "attempt": 1, "error": null, "seconds": 127}
+{"out": "hands/HD-K3_hand-left-palm-bandaged_v1.png", "attempt": 1, "error": null, "seconds": 136}
+{"out": "characters/SP-01_us-rifleman-01_rig-upper_v1.png", "attempt": 1, "error": null, "seconds": 137}
+{"out": "characters/SP-01_us-rifleman-02_rig-upper_v1.png", "attempt": 1, "error": null, "seconds": 139}
+{"out": "characters/SP-01_us-rifleman-03_rig-upper_v1.png", "attempt": 1, "error": null, "seconds": 140}
+{"out": "hands/HD-K1_rifle-carry_v1.png", "attempt": 1, "error": null, "seconds": 141}
+{"out": "props/PR-22_foxhole_bowl_v1.png", "attempt": 1, "error": null, "seconds": 161}

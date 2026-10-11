@@ -148,3 +148,19 @@
 done: 72 ok, 1 failed
 props/PR-18_burned_vehicle_v1.png
 15 jobs pending
+[ok] backgrounds/BG-06_ground_plate-no-blade_v1.png (1) 
+[ok] backgrounds/BG-06_ground_L5-grass-blade_v1.png (1) 
+[ok] hands/HD-K2_sight-picture_v1.png (1) 
+[ok] props/PR-18_burned_vehicle_v1.png (1) 
+[ok] props/PR-14_jacket-chest_secured_v1.png (1) 
+[ok] effects/FX-24_crow-parts_v1.png (1) 
+[ok] props/PR-20_crater_bowl_02_v1.png (1) 
+[ok] hands/HD-K6_sleeve-strip-left_v1.png (1) 
+[ok] hands/HD-K4_hand-left-flat-press_v1.png (1) 
+[ok] hands/HD-K3_hand-left-palm-bandaged_v1.png (1) 
+[ok] characters/SP-01_us-rifleman-01_rig-upper_v1.png (1) 
+[ok] characters/SP-01_us-rifleman-02_rig-upper_v1.png (1) 
+[ok] characters/SP-01_us-rifleman-03_rig-upper_v1.png (1) 
+[ok] hands/HD-K1_rifle-carry_v1.png (1) 
+[ok] props/PR-22_foxhole_bowl_v1.png (1) 
+done: 15 ok, 0 failed
