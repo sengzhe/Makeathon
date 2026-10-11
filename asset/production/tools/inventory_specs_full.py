@@ -37,9 +37,6 @@ FIRST_PERSON = [
     ("HD-K4", "hand-left-flat-press", f"Left hand only, back of hand to camera, fingers flat and "
      f"together as if pressing on a breast pocket, {SLEEVE}, bandage wrap visible around the palm edge, "
      "wristwatch. Enters from the bottom edge. Story beats: pocket touch and final reach", [HANDS]),
-    ("HD-K5", "hand-right-pinch", f"Right hand only, thumb and index finger pinching an unseen paper "
-     f"corner, {SLEEVE}, no bandage, no watch. Enters from the bottom edge. Holds the letter during the "
-     "reveal", [HANDS]),
 ]
 
 RIGS = [
