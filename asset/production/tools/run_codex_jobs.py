@@ -121,8 +121,10 @@ def main():
     ap.add_argument("--workers", type=int, default=10)
     ap.add_argument("--phase", default="all")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--skip-first", type=int, default=0,
+                    help="skip N leading pending jobs still in flight from a previous runner")
     args = ap.parse_args()
-    jobs = [j for j in build_jobs(args.phase) if validate(j)]
+    jobs = [j for j in build_jobs(args.phase) if validate(j)][args.skip_first:]
     print(f"{len(jobs)} jobs pending", flush=True)
     if args.dry_run:
         for j in jobs:
