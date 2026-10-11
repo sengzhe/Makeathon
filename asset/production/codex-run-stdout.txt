@@ -164,3 +164,14 @@ props/PR-18_burned_vehicle_v1.png
 [ok] hands/HD-K1_rifle-carry_v1.png (1) 
 [ok] props/PR-22_foxhole_bowl_v1.png (1) 
 done: 15 ok, 0 failed
+9 jobs pending
+[ok] backgrounds/BG-04_field-b-crater-field_v2.png (1) 
+[ok] effects/FX-24_crow-parts_v2.png (1) 
+[ok] backgrounds/BG-02_farmyard_v2.png (1) 
+[ok] backgrounds/BG-03_field-a_v2.png (1) 
+[ok] props/PR-14_jacket-chest_letter-half-out_v2.png (1) 
+[ok] hands/HD-K4_hand-left-flat-press_v2.png (1) 
+[ok] characters/SP-03_wounded-gi_fence-post_v2.png (1) 
+[ok] characters/SP-07_medic_closeup-face_v2.png (1) 
+[ok] backgrounds/BG-01_kitchen_L3-walls_v2.png (1) 
+done: 9 ok, 0 failed
