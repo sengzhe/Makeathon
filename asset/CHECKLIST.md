@@ -1,16 +1,20 @@
 # Shared asset checklist
 
+Scene-specific checklists: [Scene 1 — Breakfast](scene-01/CHECKLIST.md) and [Scene 2 — The House](scene-02/CHECKLIST.md). Later scenes remain unexpanded.
+
 Source: [Home by Christmas — 2.5D Production Script](../doc/Home%20by%20Christmas%20%E2%80%94%202.5D%20Production%20Script.md).
 
 Checked items have a generated static style trial. Final layered masters, additional poses and animation remain separate production work. Use the style prompt in [AGENTS.md](../AGENTS.md) for future generation.
 
-- [x] **Tommy's hands and sleeves** — HD library; scenes 1–5. Maintain anatomy, bandage, watch and costume across poses. [Generated trial](tommy-hands-sleeves-v1.png).
+Presentation uses generated still images and programmatic animation. The revised script limits visible hand contact to the bandage reveal, pocket touch and final reach. HD IDs now identify staging cues, not separate hand-animation sequences.
+
+- [x] **Tommy's hands and sleeves** — HD library. Prepare held bandage and pocket-contact inserts for scenes 1, 3 and 5. Reuse the contact shape for the final reach. [Generated trial](tommy-hands-sleeves-v1.png).
 - [x] **Tommy's rifle** — L7a / PR-06; scenes 3–5. Keep one design across pickup, running and aiming views. [Generated trial](m1-garand-v1.png).
 - [x] **Annie's letter and yellow star** — PR-02 / TX-02, ending motif FX-27; scenes 1 and 5, star in 6. Preserve the drawing, handwriting and star shape. [Generated trial](annies-letter-v1.png).
 - [ ] **Jacket chest and pocket** — PR-14; scenes 1, 3 and 5. Connect the letter tuck, reassuring touch and final reach.
 - [ ] **Kitchen panorama** — BG-01; scenes 1–3. Build one layered set for breakfast, the ruined-house reveal and escape.
 - [ ] **Field C** — BG-05; scenes 4–5. Preserve geography between Shot 3 and the grenade.
-- [ ] **US riflemen** — SP-01; scenes 3–4. Prepare three variants with run, fall and prone states.
+- [ ] **US riflemen** — SP-01; scenes 3–4. Prepare three static variants and the required separated parts. Use programmatic run/fall motion and concealed swaps to prone states.
 - [ ] **Medic** — SP-07; scenes 4–5. Preserve identity between the battlefield appearance and final close-up.
 - [ ] **Boy in the foxhole** — SP-09; scenes 4–5. Match the fleeting appearance to the later frightened-boy reveal.
 - [ ] **Fallen soldiers** — SP-10; scenes 3–5. Prepare a shared US/German body library for the battlefield progression.

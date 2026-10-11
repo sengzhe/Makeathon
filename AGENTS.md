@@ -6,6 +6,21 @@ Use this prompt for image asset generation throughout the animation. Preserve it
 
 > **Non-realistic 2.5D wartime illustration with a simplified low-poly appearance.** Use broad angular planes, clean polygonal silhouettes, restrained human proportions and economical facial features. Apply muted olive, khaki, grey-green, earth brown and subdued warm skin tones. Materials are matte, with sparse texture and two or three broad shading tones. Keep outlines subtle and helmet shadows simple. Build depth through overlapping, separately layered foreground, middle-ground and background artwork. Preserve each character’s silhouette, costume and proportions across poses. Keep the mood quiet, human and sombre.
 
+## Story presentation and hand visibility
+
+Present the story through generated still images and programmatic 2.5D animation. Use the production script as the source for staging and timing.
+
+> Hands appear only when their presence communicates a story beat. Frame routine handling below the image or conceal it with a motivated cut. Prefer held poses and simple whole-object movement. Reserve visible hand contact for the bandage reveal, pocket touch and final reach.
+
+- Animate reusable images with translation, scale, rotation, opacity, parallax, limited mesh deformation, particles, lighting and masks.
+- Use held image states and concealed cuts for large pose changes. Keep foreground fingers fixed within each state.
+- Keep gripping hands outside the crop during running and aiming. Reuse the pocket-contact state for the final reach.
+- Use framing and sound for routine handling. Do not add detailed catching, folding, tucking or equipment-pickup gestures.
+- Reuse existing image pixels through crops, masks and separated parts before requesting another image state.
+- Request a new static state only when a required viewpoint or silhouette cannot come from the existing art.
+- Treat script frame counts as playback timing, not the number of images to generate. Generated video is not required.
+- Keep scene checklists aligned with this staging. Remove superseded gesture requirements rather than marking them completed.
+
 ## How to use the prompt
 
 - Generate only the assets and variants requested by the user. Do not generate the complete inventory without authorization.
@@ -27,7 +42,7 @@ Use this prompt for image asset generation throughout the animation. Preserve it
 - [M1 Garand](asset/m1-garand-v1.png)
 - [Annie's letter and yellow star](asset/annies-letter-v1.png)
 
-Treat these as static style trials. Confirm handedness, equipment details and paper-fold geometry against the script before preparing final animation poses.
+Treat these as static style trials. Confirm handedness, equipment details and paper states against the script before preparing the required inserts.
 
 ## Animation kit rules
 

@@ -52,7 +52,10 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('resize', () => { stopSurprise(); scheduleSurprise(); });
 // Normal playback owns the screen until its Promise resolves.
-dialog.addEventListener('cancel', event => event.preventDefault());
+dialog.addEventListener('cancel', event => {
+  event.preventDefault();
+  document.querySelector('#scene-stage').dispatchEvent(new Event('scene-stop'));
+});
 enter.addEventListener('click', async () => {
   if (playing) return;
   playing = true; stopSurprise();

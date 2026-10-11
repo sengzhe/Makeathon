@@ -1,58 +1,161 @@
-// Replace this function with any programmatic scene. Resolve when it ends.
-// The caller owns the page transition, input lock, cleanup and focus restoration.
-export async function playScene(stage, { reducedMotion = false } = {}) {
-  const duration = reducedMotion ? 5000 : 14000;
-  const photo = stage.querySelector('.scene-image');
-  const caption = stage.querySelector('.scene-caption');
-  const canvas = stage.querySelector('canvas');
-  const progress = stage.querySelector('.scene-progress span');
-  const context = canvas.getContext('2d');
-  const animations = [];
-  let frame;
-  let width, height;
-  function resize() {
-    width=stage.clientWidth; height=stage.clientHeight;
-    const ratio=Math.min(devicePixelRatio || 1,2);
-    canvas.width=width*ratio; canvas.height=height*ratio;
-    context?.setTransform(ratio,0,0,ratio,0,0);
+import {scenes} from './scene-registry.js';
+import {transitionFrame, drawTransition, canAdvance} from './transitions.js';
+
+// One clock and input owner. Scene modules render; only this player advances.
+export async function playScene(stage, {reducedMotion = false, review = false, initialScene = 0} = {}) {
+  const lifetime = new AbortController();
+  const assetBase = new URL('./assets/film/', import.meta.url).href;
+  const state = {};
+  let current, currentAbort, nextModule, frame, previous;
+  let index = Math.max(0, Math.min(scenes.length - 1, Math.trunc(Number(initialScene) || 0)));
+  let time = 0, paused = false, busy = true, ended = false, transition = null;
+  let generation = 0, pendingAdvance = false;
+  const pointer = {x:0, y:0};
+  let finish;
+  const completed = new Promise(resolve => {finish = resolve;});
+  stage.replaceChildren(); stage.classList.add('film-player');
+  stage.innerHTML = `<div class="film-viewport"><div class="film-host"></div><canvas class="film-transition" width="1920" height="1080" aria-hidden="true"></canvas></div>
+    <p class="film-message" role="status" aria-live="polite">Loading the scene…</p>
+    <div class="film-controls"><button type="button" data-action="pause">Pause</button><span class="film-time"></span><button type="button" data-action="exit">Return to newspaper</button></div>`;
+  const viewport = stage.querySelector('.film-viewport'), host = stage.querySelector('.film-host');
+  const overlay = stage.querySelector('canvas'), ctx = overlay.getContext('2d');
+  const message = stage.querySelector('.film-message'), pause = stage.querySelector('[data-action="pause"]');
+  const clock = stage.querySelector('.film-time');
+  let select, seek, transitionSelect;
+  if (review) {
+    const tools = document.createElement('div'); tools.className = 'film-review';
+    tools.innerHTML = `<label>Scene <select aria-label="Review scene"></select></label><label class="film-seek-label">Time <input aria-label="Scene time" type="range" min="0" value="0" step="0.05"></label><label>Transition <select aria-label="Transition preview"><option value="script">Script</option><option>cut</option><option>black</option><option>smoke</option><option>flash</option><option>paper</option></select></label><button type="button" data-action="next">Next scene</button>`;
+    stage.append(tools);
+    [select, transitionSelect] = tools.querySelectorAll('select'); seek = tools.querySelector('input');
+    for (const scene of scenes) select.add(new Option(`${scene.id} · ${scene.title}`, scene.id));
+    select.addEventListener('change', () => jump(Number(select.value)), {signal:lifetime.signal});
+    seek.addEventListener('input', () => {
+      if (busy) return;
+      time = Number(seek.value); transition = null; pendingAdvance = false;
+      ctx.clearRect(0, 0, 1920, 1080); setPaused(true); render(0);
+    }, {signal:lifetime.signal});
   }
-  resize();
-  window.addEventListener('resize',resize);
-  const animate=(element,keys,options)=>{const a=element.animate(keys,options);animations.push(a);return a;};
-  const dust=Array.from({length:14},()=>({x:Math.random(),y:Math.random(),size:Math.random()*1.7+.3,depth:Math.random()+.2}));
-  const start=performance.now();
-  function draw(now) {
-    if (!context) return;
-    const t=(now-start)/1000;
-    context.clearRect(0,0,width,height);
-    // Independent near and far atmospheric planes create depth over the still.
-    for(let i=0;i<3;i++) {
-      const x=((i*.24+t*.012)%1.5-.25)*width;
-      const y=height*(.30+.13*Math.sin(i*2+t*.14));
-      const r=width*(.16+(i%3)*.05);
-      const haze=context.createRadialGradient(x,y,0,x,y,r);
-      haze.addColorStop(0,'rgba(205,203,195,.085)');haze.addColorStop(1,'rgba(205,203,195,0)');
-      context.fillStyle=haze; context.fillRect(x-r,y-r,r*2,r*2);
-    }
-    for(const p of dust) {
-      const x=((p.x+t*.008*p.depth)%1)*width;
-      const y=((p.y-t*.012*p.depth)%1+1)%1*height;
-      context.fillStyle=`rgba(232,225,207,${.12+p.depth*.16})`;
-      context.beginPath();context.arc(x,y,p.size,0,Math.PI*2);context.fill();
-    }
-    frame=requestAnimationFrame(draw);
+  function setPaused(value) {
+    paused = value; pause.textContent = paused ? 'Play' : 'Pause';
+    pause.setAttribute('aria-pressed', String(paused)); previous = undefined;
   }
-  try {
-    if (!reducedMotion) {
-      animate(photo,[{transform:'scale(1.015) translate3d(0,0,0)'},{transform:'scale(1.15) translate3d(-1.6%,1%,25px)'}],{duration,easing:'cubic-bezier(.16,.4,.3,1)',fill:'forwards'});
-      frame=requestAnimationFrame(draw);
+  function stop() { if (!ended) {ended = true; currentAbort?.abort(); finish();} }
+  function reportError(error) {
+    console.error('Scene load failed:', error); busy = false; setPaused(true);
+    message.hidden = false; message.replaceChildren(document.createTextNode('This scene could not load. '));
+    const retry = document.createElement('button'); retry.textContent = 'Retry';
+    retry.addEventListener('click', () => jump(index), {signal:lifetime.signal}); message.append(retry);
+  }
+  function preload() {
+    nextModule = null;
+    const expected = index + 1;
+    if (!scenes[expected]) return;
+    // Import is speculative. The next scene's assets decode under opaque coverage.
+    scenes[expected].load().then(module => {if (index + 1 === expected) nextModule = module;}, () => {});
+  }
+  async function mount(target, module, handoff) {
+    const ticket = ++generation;
+    busy = true; currentAbort?.abort();
+    const controller = new AbortController(); currentAbort = controller;
+    message.hidden = false; message.textContent = 'Loading the scene…';
+    const root = document.createElement('div'); root.className = 'film-scene'; root.dataset.scene = String(target);
+    let scene;
+    try {
+      module ||= await scenes[target].load();
+      scene = await module.mountScene({root, assetBase, reducedMotion, signal:controller.signal, handoff, state});
+      if (ticket !== generation || ended) {scene.dispose?.(); return;}
+      if (typeof scene.render !== 'function') throw new Error(`Scene ${target} must return render()`);
+      current?.dispose?.(); current = scene; host.replaceChildren(root); index = target; time = 0;
+      busy = false; previous = undefined; stage.dataset.scene = String(index); message.hidden = true;
+      if (review) {select.value = String(index); seek.max = String(scenes[index].duration);}
+      render(0); preload();
+    } catch (error) {
+      scene?.dispose?.(); root.remove();
+      if (ticket !== generation || ended || controller.signal.aborted) return;
+      index = target; reportError(error);
     }
-    animate(stage,[{opacity:0},{opacity:1,offset:.08},{opacity:1,offset:.90},{opacity:0}],{duration,fill:'forwards'});
-    animate(caption,[{opacity:0},{opacity:0,offset:.22},{opacity:1,offset:.38},{opacity:1,offset:.72},{opacity:0,offset:.9},{opacity:0}],{duration,fill:'forwards'});
-    await animate(progress,[{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration,easing:'linear',fill:'forwards'}).finished;
-  } finally {
-    cancelAnimationFrame(frame);window.removeEventListener('resize',resize);
-    animations.forEach(animation=>animation.cancel());
-    context?.clearRect(0,0,width,height);
+  }
+  async function jump(target) {
+    transition = null; pendingAdvance = false; setPaused(true);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1920, 1080);
+    await mount(target, null, null); ctx.clearRect(0, 0, 1920, 1080);
+  }
+  function transitionKind() {return review && transitionSelect.value !== 'script' ? transitionSelect.value : scenes[index].transition;}
+  function beginTransition(manual = false) {
+    if (transition || busy || ended) return;
+    if (!scenes[index + 1]) {stop(); return;}
+    transition = {kind:transitionKind(), elapsed:0, swapped:false, manual};
+  }
+  async function swap() {
+    if (!transition || transition.swapped || busy) return;
+    transition.swapped = true;
+    const handoff = current?.getHandoff?.() ?? null;
+    // Keep coverage opaque during decoding. Neither scene clock runs while loading.
+    ctx.fillStyle = transitionFrame(transition.kind, 0).color;
+    ctx.fillRect(0, 0, 1920, 1080);
+    await mount(index + 1, nextModule, handoff);
+  }
+  function render(delta) {
+    if (!current || busy) return;
+    current.render({time, delta, pointer, state}); stage.dataset.time = time.toFixed(3);
+    const format = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+    clock.textContent = `${scenes[index].title} · ${format(time)} / ${format(scenes[index].duration)}`;
+    if (seek) seek.value = String(time);
+  }
+  function tick(now) {
+    if (ended) return;
+    const delta = previous === undefined ? 0 : Math.min((now - previous) / 1000, .1); previous = now;
+    if (!paused && !busy) {
+      time = Math.min(scenes[index].duration, time + delta);
+      if (!transition) {
+        const spec = transitionFrame(transitionKind(), 0, {reducedMotion});
+        if (pendingAdvance || time >= scenes[index].duration - spec.swapAt) beginTransition(pendingAdvance);
+      }
+      if (transition) {
+        transition.elapsed += delta;
+        const info = transitionFrame(transition.kind, transition.elapsed, {reducedMotion});
+        if (!transition.swapped && transition.elapsed >= info.swapAt && (transition.manual || time >= scenes[index].duration)) {
+          pendingAdvance = false; void swap();
+        }
+        if (!busy) {
+          ctx.clearRect(0, 0, 1920, 1080);
+          drawTransition(ctx, transition.kind, info, 1920, 1080);
+          if (info.done && transition.swapped) {transition = null; ctx.clearRect(0, 0, 1920, 1080);}
+        }
+      }
+      try {render(delta);} catch (error) {reportError(error);}
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  function action() {
+    if (busy || paused || transition || ended) return;
+    const result = current?.onAction?.({time, pointer, state});
+    if (canAdvance(`s${index}`, time) && result !== 'handled') pendingAdvance = true;
+  }
+  stage.addEventListener('click', event => {
+    const button = event.target.closest('[data-action]');
+    if (button?.dataset.action === 'exit') stop();
+    else if (button?.dataset.action === 'pause') setPaused(!paused);
+    else if (button?.dataset.action === 'next' && review && !busy) {setPaused(false); pendingAdvance = true;}
+    else if (event.target.closest('.film-viewport')) action();
+  }, {signal:lifetime.signal});
+  viewport.addEventListener('pointermove', event => {
+    const rect = viewport.getBoundingClientRect();
+    pointer.x = Math.max(-1, Math.min(1, (event.clientX - rect.left) / rect.width * 2 - 1));
+    pointer.y = Math.max(-1, Math.min(1, (event.clientY - rect.top) / rect.height * 2 - 1));
+  }, {signal:lifetime.signal});
+  viewport.addEventListener('pointerleave', () => {pointer.x = pointer.y = 0;}, {signal:lifetime.signal});
+  stage.addEventListener('scene-stop', stop, {signal:lifetime.signal});
+  window.addEventListener('keydown', event => {
+    if (['INPUT','SELECT','BUTTON'].includes(event.target.tagName)) return;
+    if (event.key === ' ') {event.preventDefault(); setPaused(!paused);}
+    if (event.key === 'Enter') action();
+    if (event.key === 'Escape') stop();
+  }, {signal:lifetime.signal});
+  document.addEventListener('visibilitychange', () => {if (document.hidden) setPaused(true);}, {signal:lifetime.signal});
+  try {await mount(index); frame = requestAnimationFrame(tick); await completed;}
+  finally {
+    ended = true; generation++; cancelAnimationFrame(frame); lifetime.abort(); currentAbort?.abort(); current?.dispose?.();
+    stage.replaceChildren(); stage.classList.remove('film-player'); delete stage.dataset.scene; delete stage.dataset.time;
   }
 }
