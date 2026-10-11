@@ -28,3 +28,12 @@ Use this prompt for image asset generation throughout the animation. Preserve it
 - [Annie's letter and yellow star](asset/annies-letter-v1.png)
 
 Treat these as static style trials. Confirm handedness, equipment details and paper-fold geometry against the script before preparing final animation poses.
+
+## Animation kit rules
+
+- The film is first person. Hands appear only when they carry a story beat: the bandage reveal, the pocket touch and the final reach. Frame routine handling below the image edge or hide it with a motivated cut.
+- Prefer held poses and whole-object movement (translate, rotate, bob, jitter in the engine) over drawn hand or limb animation.
+- First-person rifle work uses two hand-free sprites: the rifle entering from the lower-right edge (carry, raise, lower) and the sight picture (aim, fire with FX overlays).
+- Characters that move are split into rig parts (for example body and head, pivot at the neck base). Static characters such as bodies, falls and prone poses stay single sprites.
+- Superseded by these rules: `SP-07_medic_hand-holding-letter_v1.png`, `SP-09_boy_hands-shaking_v1.png` and the original HD-01 to HD-15 hand-pose plan. Keep the files; do not use them in the kit.
+- Generation tooling and the job inventory live in `asset/production/tools/`.
