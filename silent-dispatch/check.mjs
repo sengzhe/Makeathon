@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {playScene} from './dist/scene.js';
+let cancelled = 0;
+let durations = [];
+const element = { animate(_frames, options) { durations.push(options.duration); return {finished:Promise.resolve(),cancel(){cancelled++;}}; } };
+const canvas = {getContext:()=>null};
+const stage = {...element,clientWidth:100,clientHeight:100,querySelector:s=>s==='canvas'?canvas:element};
+globalThis.devicePixelRatio=1;
+let listeners=0;
+globalThis.window={addEventListener(){listeners++},removeEventListener(){listeners--}};
+globalThis.cancelAnimationFrame=()=>{};
+globalThis.requestAnimationFrame=()=>1;
+await playScene(stage,{reducedMotion:true});
+assert.equal(listeners,0);assert.equal(cancelled,3);assert.ok(durations.every(n=>n===5000));
+cancelled=0;durations=[];
+await playScene(stage);
+assert.equal(listeners,0);assert.equal(cancelled,4);assert.ok(durations.every(n=>n===14000));
+console.log('PASS: both scene modes finish and clean up their animations and resize listener.');

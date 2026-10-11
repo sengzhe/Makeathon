@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-11T04:39:21.342794+00:00",
+  "title": "Design System: The Silent Dispatch",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Charcoal Ink",
+        "canonical": "#282820",
+        "tonalRamp": [
+          "oklch(15% 0.018 105)",
+          "oklch(26% 0.018 105)",
+          "oklch(38% 0.018 105)",
+          "oklch(49% 0.018 105)",
+          "oklch(61% 0.018 105)",
+          "oklch(72% 0.018 105)",
+          "oklch(84% 0.018 105)",
+          "oklch(95% 0.018 105)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Aged Paper",
+        "canonical": "#e4decd",
+        "tonalRamp": [
+          "oklch(15% 0.025 90)",
+          "oklch(26% 0.025 90)",
+          "oklch(38% 0.025 90)",
+          "oklch(49% 0.025 90)",
+          "oklch(61% 0.025 90)",
+          "oklch(72% 0.025 90)",
+          "oklch(84% 0.025 90)",
+          "oklch(95% 0.025 90)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Faded Rule",
+        "canonical": "#797568",
+        "tonalRamp": [
+          "oklch(15% 0.022 90)",
+          "oklch(26% 0.022 90)",
+          "oklch(38% 0.022 90)",
+          "oklch(49% 0.022 90)",
+          "oklch(61% 0.022 90)",
+          "oklch(72% 0.022 90)",
+          "oklch(84% 0.022 90)",
+          "oklch(95% 0.022 90)"
+        ]
+      },
+      "desk": {
+        "role": "neutral",
+        "displayName": "Desk Grey",
+        "canonical": "#c7c3b7",
+        "tonalRamp": [
+          "oklch(15% 0.018 90)",
+          "oklch(26% 0.018 90)",
+          "oklch(38% 0.018 90)",
+          "oklch(49% 0.018 90)",
+          "oklch(61% 0.018 90)",
+          "oklch(72% 0.018 90)",
+          "oklch(84% 0.018 90)",
+          "oklch(95% 0.018 90)"
+        ]
+      },
+      "desk-label": {
+        "role": "neutral",
+        "displayName": "Desk Label Ink",
+        "canonical": "#56554c",
+        "tonalRamp": [
+          "oklch(15% 0.017 105)",
+          "oklch(26% 0.017 105)",
+          "oklch(38% 0.017 105)",
+          "oklch(49% 0.017 105)",
+          "oklch(61% 0.017 105)",
+          "oklch(72% 0.017 105)",
+          "oklch(84% 0.017 105)",
+          "oklch(95% 0.017 105)"
+        ]
+      },
+      "scene": {
+        "role": "neutral",
+        "displayName": "Scene Black",
+        "canonical": "#111111",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "scene-text": {
+        "role": "neutral",
+        "displayName": "Scene Parchment",
+        "canonical": "#eee9de",
+        "tonalRamp": [
+          "oklch(15% 0.016 90)",
+          "oklch(26% 0.016 90)",
+          "oklch(38% 0.016 90)",
+          "oklch(49% 0.016 90)",
+          "oklch(61% 0.016 90)",
+          "oklch(72% 0.016 90)",
+          "oklch(84% 0.016 90)",
+          "oklch(95% 0.016 90)"
+        ]
+      },
+      "photograph-label": {
+        "role": "neutral",
+        "displayName": "Photograph Ivory",
+        "canonical": "#fff7e6",
+        "tonalRamp": [
+          "oklch(15% 0.026 90)",
+          "oklch(26% 0.026 90)",
+          "oklch(38% 0.026 90)",
+          "oklch(49% 0.026 90)",
+          "oklch(61% 0.026 90)",
+          "oklch(72% 0.026 90)",
+          "oklch(84% 0.026 90)",
+          "oklch(95% 0.026 90)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "nameplate": {
+        "displayName": "Nameplate",
+        "purpose": "Publication identity only."
+      },
+      "headline": {
+        "displayName": "Lead headline",
+        "purpose": "Monumental uppercase lead story."
+      },
+      "title": {
+        "displayName": "Article title",
+        "purpose": "Short serif headings; synthesized bold."
+      },
+      "body": {
+        "displayName": "Newsprint body",
+        "purpose": "Compact justified editorial columns."
+      },
+      "section-label": {
+        "displayName": "Section label",
+        "purpose": "Uppercase editorial categories."
+      },
+      "edition": {
+        "displayName": "Edition metadata",
+        "purpose": "Issue and dateline details."
+      }
+    },
+    "shadows": [
+      {
+        "name": "paper-lift",
+        "value": "0 7px 30px #35352d24",
+        "purpose": "Diffuse lift from the surrounding desk."
+      },
+      {
+        "name": "paper-aging",
+        "value": "inset 0 0 85px #8c77491a",
+        "purpose": "Faint warmth inside the paper edges."
+      },
+      {
+        "name": "scene-vignette",
+        "value": "inset 0 0 180px 35px #0005",
+        "purpose": "Restrained edge darkness around the stylized 2.5D scene."
+      }
+    ],
+    "motion": [
+      {
+        "name": "photo-haunt",
+        "value": "17s ease-in-out infinite alternate",
+        "purpose": "Barely perceptible photographic drift."
+      },
+      {
+        "name": "entry-hover",
+        "value": "transform .5s",
+        "purpose": "Lift the entry label by 4px."
+      },
+      {
+        "name": "word-ink",
+        "value": "10000ms duration, 1300ms per word, 3300\u20135000ms stagger, maximum 3 concurrent",
+        "purpose": "Dark ink breathes and trembles slowly beneath sharp words, with irregular out-of-phase tendrils and soft edges, visiting seven nearby words before fading."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1000px"
+      },
+      {
+        "name": "mobile",
+        "value": "650px"
+      },
+      {
+        "name": "wide-desktop",
+        "value": "1600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Nameplate",
+      "kind": "custom",
+      "description": "Blackletter publication identity with italic motto.",
+      "html": "<div class=\"ds-nameplate\">The Silent Dispatch<div class=\"ds-motto\">\u201cSome stories cannot stay on the page.\u201d</div></div>",
+      "css": ".ds-nameplate{font:clamp(36px,5.5vw,71px)/1 \"UnifrakturMaguntia\",serif;text-align:center;color:var(--ink,#282820)}.ds-motto{font:italic 12px/1.5 var(--serif,\"IM Fell English\",Georgia,serif);margin-top:8px}"
+    },
+    {
+      "name": "Extra Badge",
+      "kind": "custom",
+      "refersTo": "extra-badge",
+      "description": "Reversed, slightly tilted editorial badge.",
+      "html": "<div class=\"ds-extra\">EXTRA<span>SPECIAL EDITION</span></div>",
+      "css": ".ds-extra{display:inline-block;background:var(--ink,#282820);color:var(--paper,#e4decd);font:800 33px/.95 var(--display,\"Barlow Condensed\",\"Arial Narrow\",sans-serif);padding:8px 12px 7px;transform:rotate(-1deg);text-align:center}.ds-extra span{display:block;font:8px/1.3 Georgia,serif;letter-spacing:.5px;margin-top:5px}"
+    },
+    {
+      "name": "Edition Strip",
+      "kind": "custom",
+      "description": "Issue information held between double and single rules.",
+      "html": "<div class=\"ds-edition\"><span>VOL. I \u00b7 No. 001</span><span>EUROPE, 1944 \u00b7 AN IMAGINED EDITION</span><span>PRICE ONE PENNY</span></div>",
+      "css": ".ds-edition{display:flex;justify-content:space-between;gap:8px;color:var(--ink,#282820);border-top:3px double var(--ink,#282820);border-bottom:1px solid var(--ink,#282820);padding:8px 0 7px;font:11px/1.2 Georgia,serif;letter-spacing:.5px}"
+    },
+    {
+      "name": "Photograph Entry Label",
+      "kind": "button",
+      "refersTo": "photograph-trigger",
+      "description": "Entry overlay preview on an ink field; production places this control over the battlefield photograph.",
+      "html": "<button class=\"ds-photo\" aria-label=\"Enter the photograph\"><span class=\"ds-enter\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 4h-4v4m12-4h4v4M4 16v4h4m12-4v4h-4M9 12h6m-3-3v6\"/></svg><span>ENTER THE PHOTOGRAPH</span></span></button>",
+      "css": ".ds-photo{display:block;width:100%;border:0;padding:0;background:var(--ink,#282820);cursor:pointer}.ds-enter{display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff7e6;text-shadow:0 1px 3px #0008;font:11px/1.4 Georgia,serif;letter-spacing:2px;transition:transform .5s}.ds-enter svg{width:29px;height:29px;stroke:currentColor;fill:none;stroke-width:1}.ds-photo:hover .ds-enter{transform:translateY(-4px)}.ds-photo:focus-visible{outline:2px solid var(--ink,#282820);outline-offset:5px}@media(prefers-reduced-motion:reduce){.ds-enter{transition:none}}"
+    },
+    {
+      "name": "Ambient Motion Toggle",
+      "kind": "button",
+      "refersTo": "motion-toggle",
+      "description": "Underlined footer control; state text and aria-pressed are updated by the application.",
+      "html": "<button class=\"ds-motion\" aria-pressed=\"false\">Ambient motion: on</button>",
+      "css": ".ds-motion{font:12px/1.3 var(--serif,\"IM Fell English\",Georgia,serif);background:none;border:0;color:var(--ink,#282820);text-decoration:underline;text-underline-offset:3px;padding:8px;min-height:36px;cursor:pointer;letter-spacing:0}.ds-motion:focus-visible{outline:2px solid var(--ink,#282820);outline-offset:5px}"
+    },
+    {
+      "name": "Editorial Pull Quote",
+      "kind": "custom",
+      "description": "Centered italic interruption within the lower news strip.",
+      "html": "<blockquote class=\"ds-quote\">\u201cEven in the noise,<br>there are things<br>we hear in silence.\u201d</blockquote>",
+      "css": ".ds-quote{font:italic 23px/1.2 var(--serif,\"IM Fell English\",Georgia,serif);text-align:center;margin:0;color:var(--ink,#282820)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Living Broadsheet",
+    "overview": "Warm paper, charcoal ink and densely set type establish a printed newspaper. A blackletter nameplate, condensed headline and literary serif give each editorial role its own voice. The supplied newspaper reference is the visual authority.\n\nDepth belongs to the paper and photograph. Motion stays almost imperceptible while reading, then expands into a full-screen stylized 2.5D scene after deliberate activation.",
+    "keyCharacteristics": [
+      "Warm paper and charcoal ink.",
+      "Dense serif columns with fine and double rules.",
+      "Square editorial geometry and restrained material shadows.",
+      "A photograph that becomes an immersive scene."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve distinct nameplate, headline and body type roles.",
+      "Do use thin and double rules to organize editorial content.",
+      "Do retain visible keyboard focus and the ambient-motion control.",
+      "Do let the photograph lead the mobile reading order."
+    ],
+    "donts": [
+      "Don't replace the newspaper world with application chrome.",
+      "Don't introduce rounded cards or colored action accents into the established page.",
+      "Don't increase ambient motion until it competes with reading."
+    ]
+  }
+}
