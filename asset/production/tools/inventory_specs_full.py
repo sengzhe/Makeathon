@@ -12,7 +12,7 @@ Animation-kit rules (project decision, 2026-10-11):
   characters (bodies, falls, prone) stay single sprites.
 """
 
-from inventory_specs import GI, GER, MEDIC, BOY, HUMMER, HANDS, LETTER, RIFLE, FIELD_C, KITCHEN, RIFLEMAN
+from inventory_specs import JACKET, GI, GER, MEDIC, BOY, HUMMER, HANDS, LETTER, RIFLE, FIELD_C, KITCHEN, RIFLEMAN
 
 NO_HANDS = "No hands visible anywhere in the image"
 PART = ("Rig part for cutout animation: draw only this part, cleanly cut at the joint with a "
@@ -122,6 +122,23 @@ SPECS_FULL = [
      f"silhouette. {NO_HANDS}. Dropping is an engine slide down", []),
     (2, "SP-08", "characters", "wounded-under-medic", "cutout",
      f"Wounded {GI}, lying on his back, chest bandaged, eyes half open. {NO_HANDS}", [RIFLEMAN]),
+    (2, "HD-K6", "hands", "sleeve-strip-left", "cutout",
+     "First-person left forearm sleeve only: olive drab M1943 field jacket sleeve with buttoned cuff "
+     "tab and 1-2 cm wool knit cuff, entering from the lower-left frame edge, cut cleanly at the cuff. "
+     f"{NO_HANDS}. Plain fabric so a blood stain mask can be applied later", [HANDS]),
+    (2, "PR-14", "props", "jacket-chest_secured", "cutout",
+     "Same clean jacket chest strip as reference, pocket flap buttoned, only a thin cream paper edge "
+     "of the folded letter peeking above the flap; no drawing visible, no stain", [JACKET, LETTER]),
+    (2, "BG-06", "backgrounds", "ground_L5-grass-blade", "cutout",
+     "Single frozen grass blade with frost crystals, close to the lens, tall and slightly bent, "
+     "natural muted green", [FIELD_C]),
+    (2, "BG-06", "backgrounds", "ground_plate-no-blade", "plate",
+     "Mud-level ground view without any foreground grass blade: wet mud plane with snow patches "
+     "filling the lower half, pale winter sky in the upper half, wide margins for rotation", [FIELD_C]),
+    (2, "FX-24", "effects", "crow-parts", "fx",
+     "Crow sprite parts for procedural flapping, spaced apart with clear gaps: three black crow "
+     "bodies without wings (side, three-quarter, banking) and six separate wing shapes (up, mid, "
+     "down strokes for left and right)", []),
     (2, "FX-01", "effects", "muzzle-flash-tommy", "fx", "Rifle muzzle flash, bright faceted star burst", []),
     (2, "FX-02", "effects", "mg-muzzle-flash", "fx", "Machine-gun muzzle flash, small pulsing burst", []),
     (2, "FX-04", "effects", "mortar-flash", "fx", "Mortar impact white-orange flash bloom", []),

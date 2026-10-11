@@ -137,3 +137,8 @@
 {"out": "props/PR-21_barn_crows_v1.png", "attempt": 1, "error": null, "seconds": 172}
 {"out": "props/PR-25_broken_cart_v1.png", "attempt": 1, "error": null, "seconds": 134}
 {"out": "props/PR-26_doorframe_v1.png", "attempt": 1, "error": null, "seconds": 137}
+{"out": "props/PR-24_grave_marker_01_v1.png", "attempt": 1, "error": null, "seconds": 180}
+{"out": "props/PR-24_grave_marker_03_v1.png", "attempt": 1, "error": null, "seconds": 184}
+{"out": "props/PR-01_newspaper_turn_03_v1.png", "attempt": 2, "error": null, "seconds": 111}
+{"out": "props/PR-18_burned_vehicle_v1.png", "attempt": 1, "error": "missing output", "seconds": 308}
+{"out": "props/PR-18_burned_vehicle_v1.png", "attempt": 2, "error": "missing output", "seconds": 306}

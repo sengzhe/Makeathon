@@ -140,3 +140,11 @@
 [ok] props/PR-21_barn_crows_v1.png (1) 
 [ok] props/PR-25_broken_cart_v1.png (1) 
 [ok] props/PR-26_doorframe_v1.png (1) 
+[ok] props/PR-24_grave_marker_01_v1.png (1) 
+[ok] props/PR-24_grave_marker_03_v1.png (1) 
+[ok] props/PR-01_newspaper_turn_03_v1.png (2) 
+[FAIL] props/PR-18_burned_vehicle_v1.png (1) missing output
+[FAIL] props/PR-18_burned_vehicle_v1.png (2) missing output
+done: 72 ok, 1 failed
+props/PR-18_burned_vehicle_v1.png
+15 jobs pending
