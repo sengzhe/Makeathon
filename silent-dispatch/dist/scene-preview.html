@@ -1,18 +1,22 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home by Christmas — Scene review</title><link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="style.css"></head>
-<body class="preview-page">
-<header class="preview-heading"><h1>Home by Christmas</h1><p>Scene review · Breakfast is an animation preview; scenes 2–6 await animation. Sound is pending.</p><a href="index.html">Back to newspaper</a></header>
-<main id="preview-stage" aria-label="Scene review player"></main>
-<p id="review-complete" hidden>Sequence finished. <button id="replay" type="button">Replay</button></p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home by Christmas</title><link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="preview-heading" hidden><h1>Home by Christmas</h1><p>Scene review · all six scenes are animation previews. Sound is pending.</p><a href="index.html">Back to newspaper</a></header>
+<main id="preview-stage" aria-label="Home by Christmas"></main>
+<div id="review-complete" class="movie-end" hidden><p>Home by Christmas</p><button id="replay" type="button">Watch again</button><a href="index.html">Back to newspaper</a></div>
 <script type="module">
 import {playScene} from './scene.js';
+// Default is the plain film from the first card; ?review=1 restores the review tools.
+const params=new URLSearchParams(location.search);
+const review=params.has('review');
+document.body.className=review?'preview-page':'movie-page';
+document.querySelector('.preview-heading').hidden=!review;
 const stage=document.querySelector('#preview-stage');
 const completed=document.querySelector('#review-complete');
-const params=new URLSearchParams(location.search);
 async function play() {
   completed.hidden=true;
-  await playScene(stage,{review:true,initialScene:params.get('scene') ?? 1,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});
+  await playScene(stage,{review,initialScene:params.get('scene') ?? (review?1:0),reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});
   completed.hidden=false;document.querySelector('#replay').focus();
 }
 document.querySelector('#replay').addEventListener('click',play);

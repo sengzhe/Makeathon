@@ -28,7 +28,7 @@ export function transitionFrame(kind, elapsed, { reducedMotion = false } = {}) {
 
 /** Only ordinary advance input. A scene owns aiming, hover goals and card actions. */
 export function canAdvance(sceneId, time) {
-  return sceneId === 's0' || sceneId === 's2' || (sceneId === 's1' && seconds(time) >= 42);
+  return sceneId === 's0' || (sceneId === 's1' && seconds(time) >= 42) || (sceneId === 's2' && seconds(time) >= 24);
 }
 
 /** Paint above the scene. Restore canvas state; do not clear the scene below. */

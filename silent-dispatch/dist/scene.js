@@ -1,4 +1,4 @@
-import {scenes} from './scene-registry.js';
+import {scenes, totalDuration} from './scene-registry.js';
 import {transitionFrame, drawTransition, canAdvance} from './transitions.js';
 
 // One clock and input owner. Scene modules render; only this player advances.
@@ -16,11 +16,32 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
   stage.replaceChildren(); stage.classList.add('film-player');
   stage.innerHTML = `<div class="film-viewport"><div class="film-host"></div><canvas class="film-transition" width="1920" height="1080" aria-hidden="true"></canvas></div>
     <p class="film-message" role="status" aria-live="polite">Loading the scene…</p>
-    <div class="film-controls"><button type="button" data-action="pause">Pause</button><span class="film-time"></span><button type="button" data-action="exit">Return to newspaper</button></div>`;
+    <div class="film-controls"><input class="film-scrub" type="range" min="0" max="${totalDuration}" step="0.1" value="0" aria-label="Film position"><button type="button" data-action="pause">Pause</button><span class="film-time"></span><button type="button" data-action="fullscreen">Full screen</button><button type="button" data-action="exit">Exit</button></div>`;
+  // Cinematic default: controls sit over the picture and hide after a short idle.
+  stage.querySelector('.film-viewport').append(stage.querySelector('.film-controls'));
+  let idleTimer;
+  const wake = () => {
+    stage.classList.remove('film-idle'); clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {if (!paused) stage.classList.add('film-idle');}, 2500);
+  };
+  for (const type of ['pointermove', 'keydown', 'focusin']) stage.addEventListener(type, wake, {signal:lifetime.signal});
+  lifetime.signal.addEventListener('abort', () => clearTimeout(idleTimer));
   const viewport = stage.querySelector('.film-viewport'), host = stage.querySelector('.film-host');
   const overlay = stage.querySelector('canvas'), ctx = overlay.getContext('2d');
   const message = stage.querySelector('.film-message'), pause = stage.querySelector('[data-action="pause"]');
   const clock = stage.querySelector('.film-time');
+  const scrub = stage.querySelector('.film-scrub');
+  // Film-wide position: scene start offsets let one slider seek across scene boundaries.
+  const starts = scenes.map((_, i) => scenes.slice(0, i).reduce((sum, scene) => sum + scene.duration, 0));
+  let scrubbing = false;
+  let scrubTimer;
+  // Debounced so a drag across several scenes mounts only where the pointer settles.
+  scrub.addEventListener('pointerdown', () => {scrubbing = true;}, {signal:lifetime.signal});
+  scrub.addEventListener('input', () => {
+    scrubbing = true; clearTimeout(scrubTimer);
+    scrubTimer = setTimeout(async () => {await seekFilm(Number(scrub.value)); scrubbing = false;}, 150);
+  }, {signal:lifetime.signal});
+  lifetime.signal.addEventListener('abort', () => clearTimeout(scrubTimer));
   let select, seek, transitionSelect;
   if (review) {
     const tools = document.createElement('div'); tools.className = 'film-review';
@@ -35,9 +56,27 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
       ctx.clearRect(0, 0, 1920, 1080); setPaused(true); render(0);
     }, {signal:lifetime.signal});
   }
+  /** Seek to film time t (seconds): mount the owning scene if needed, then set its local clock. */
+  let pendingSeek = null;
+  async function seekFilm(t) {
+    if (busy) {pendingSeek = t; return;}  // applied once the loading scene mounts
+    let target = scenes.length - 1;
+    while (target > 0 && t < starts[target]) target--;
+    const local = Math.min(scenes[target].duration - .05, Math.max(0, t - starts[target]));
+    transition = null; pendingAdvance = false; ctx.clearRect(0, 0, 1920, 1080);
+    if (target !== index || !current) {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1920, 1080);
+      await mount(target, null, null); ctx.clearRect(0, 0, 1920, 1080);
+    }
+    time = local; previous = undefined; render(0);
+  }
   function setPaused(value) {
-    paused = value; pause.textContent = paused ? 'Play' : 'Pause';
+    paused = value; pause.textContent = paused ? 'Play' : 'Pause'; if (paused) stage.classList.remove('film-idle');
     pause.setAttribute('aria-pressed', String(paused)); previous = undefined;
+  }
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else stage.requestFullscreen?.().catch(() => {});
   }
   function stop() { if (!ended) {ended = true; currentAbort?.abort(); finish();} }
   function reportError(error) {
@@ -69,6 +108,7 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
       busy = false; previous = undefined; stage.dataset.scene = String(index); message.hidden = true;
       if (review) {select.value = String(index); seek.max = String(scenes[index].duration);}
       render(0); preload();
+      if (pendingSeek !== null) {const t = pendingSeek; pendingSeek = null; void seekFilm(t);}
     } catch (error) {
       scene?.dispose?.(); root.remove();
       if (ticket !== generation || ended || controller.signal.aborted) return;
@@ -98,9 +138,12 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
   function render(delta) {
     if (!current || busy) return;
     current.render({time, delta, pointer, state}); stage.dataset.time = time.toFixed(3);
+    // A scene may finish its own goal (e.g. the S2 gaze) by raising this flag.
+    if (state.requestAdvance) {delete state.requestAdvance; if (!paused) pendingAdvance = true;}
     const format = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
     clock.textContent = `${scenes[index].title} · ${format(time)} / ${format(scenes[index].duration)}`;
     if (seek) seek.value = String(time);
+    if (!scrubbing) scrub.value = String(starts[index] + time);
   }
   function tick(now) {
     if (ended) return;
@@ -135,9 +178,10 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
   stage.addEventListener('click', event => {
     const button = event.target.closest('[data-action]');
     if (button?.dataset.action === 'exit') stop();
+    else if (button?.dataset.action === 'fullscreen') toggleFullscreen();
     else if (button?.dataset.action === 'pause') setPaused(!paused);
     else if (button?.dataset.action === 'next' && review && !busy) {setPaused(false); pendingAdvance = true;}
-    else if (event.target.closest('.film-viewport')) action();
+    else if (event.target.closest('.film-viewport') && !event.target.closest('.film-controls')) action();
   }, {signal:lifetime.signal});
   viewport.addEventListener('pointermove', event => {
     const rect = viewport.getBoundingClientRect();
@@ -156,6 +200,6 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
   try {await mount(index); frame = requestAnimationFrame(tick); await completed;}
   finally {
     ended = true; generation++; cancelAnimationFrame(frame); lifetime.abort(); currentAbort?.abort(); current?.dispose?.();
-    stage.replaceChildren(); stage.classList.remove('film-player'); delete stage.dataset.scene; delete stage.dataset.time;
+    stage.replaceChildren(); stage.classList.remove('film-player', 'film-idle'); if (document.fullscreenElement === stage) document.exitFullscreen?.(); delete stage.dataset.scene; delete stage.dataset.time;
   }
 }

@@ -19,7 +19,7 @@
 .film-slate p{font-size:clamp(14px,1.5vw,20px);max-width:48ch;margin:0}
 .film-slate small{font:13px/1.5 Georgia,serif;color:#c2bba9}
 .film-controls,.film-review{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 20px;background:#12120f;flex-shrink:0}
-.film-player button,.film-player select,.preview-page button{min-height:44px;background:transparent;border:1px solid #706d60;color:#eee9de;padding:8px 14px;font:13px/1.3 Georgia,serif;cursor:pointer;border-radius:0}
+.film-player button,.film-player select,.preview-page button,.movie-end button{min-height:44px;background:transparent;border:1px solid #706d60;color:#eee9de;padding:8px 14px;font:13px/1.3 Georgia,serif;cursor:pointer;border-radius:0}
 .film-player button:hover,.preview-page button:hover{background:#2d2b24}
 .film-player button:disabled{opacity:.5;cursor:wait}
 .film-player :focus-visible,.preview-page :focus-visible{outline:2px solid #f2d982;outline-offset:3px}
@@ -31,3 +31,17 @@
 .preview-heading{display:flex;align-items:center;gap:24px;flex-wrap:wrap}.preview-heading h1{font:26px/1.1 var(--serif);margin:0;letter-spacing:0}.preview-heading p{font:12px/1.5 Georgia,serif;color:#c2bba9;flex:1;min-width:240px;margin:0}.preview-heading a{font-size:13px;color:#eee9de;text-underline-offset:4px}
 #preview-stage{flex:1;min-height:260px}#review-complete{text-align:center}#review-complete[hidden]{display:none}
 @media(max-width:650px){.preview-page{padding:12px;gap:10px}.preview-heading{gap:10px}.preview-heading p{order:3;flex-basis:100%}.preview-heading h1{font-size:22px}.film-controls,.film-review{padding:6px 10px;gap:8px}.film-controls button{padding:8px;font-size:12px}.film-time{font-size:10px}.film-review label:first-child{flex:1;min-width:220px}.film-seek-label{flex-basis:100%;order:4}.film-review select{font-size:12px}.film-review{gap:6px}}
+/* Cinematic default: letterboxed picture, controls float over it and fade when idle. */
+.film-viewport .film-controls{position:absolute;left:0;right:0;bottom:0;z-index:3;background:linear-gradient(transparent,#000b);padding:28px 20px 14px;transition:opacity .4s}
+.film-viewport .film-controls button{border-color:#ffffff40;background:#0006}
+.film-viewport .film-controls .film-time{flex:1}
+.film-idle .film-controls{opacity:0;pointer-events:none}.film-idle .film-viewport{cursor:none}
+.film-player:fullscreen{background:#000}
+.movie-page{background:#000;color:#eee9de;margin:0;padding:0;height:100dvh;overflow:hidden}
+.movie-page #preview-stage{height:100dvh}
+.movie-end{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#000;font:italic 22px/1.4 var(--serif)}
+.movie-end[hidden]{display:none}
+.movie-end a{color:#c2bba9;font:13px Georgia,serif}
+.preview-heading[hidden]{display:none}
+.film-viewport .film-controls{flex-wrap:wrap}
+.film-scrub{flex-basis:100%;width:100%;margin:0 0 6px;accent-color:#d8cbae;cursor:pointer;height:20px}
