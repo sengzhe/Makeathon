@@ -50,5 +50,5 @@ Treat these as static style trials. Confirm handedness, equipment details and pa
 - Prefer held poses and whole-object movement (translate, rotate, bob, jitter in the engine) over drawn hand or limb animation.
 - First-person rifle work uses two hand-free sprites: the rifle entering from the lower-right edge (carry, raise, lower) and the sight picture (aim, fire with FX overlays).
 - Characters that move are split into rig parts (for example body and head, pivot at the neck base). Static characters such as bodies, falls and prone poses stay single sprites.
-- Superseded by these rules: `SP-07_medic_hand-holding-letter_v1.png`, `SP-09_boy_hands-shaking_v1.png` and the original HD-01 to HD-15 hand-pose plan. Keep the files; do not use them in the kit.
+- Assets the updated script no longer needs (drawn page turns, unfold frames, hand-handling poses, duplicate states) are kept in `asset/production/superseded/`. The runner treats them as done. Corrections from the script audit are saved as `_v2` beside their `_v1`; prefer the highest version.
 - Generation tooling and the job inventory live in `asset/production/tools/`.

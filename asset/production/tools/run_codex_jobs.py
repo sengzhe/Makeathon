@@ -12,6 +12,7 @@ asset/production/codex-run-log.jsonl. Failed jobs are retried once.
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import threading
@@ -24,6 +25,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).parent))
 from inventory_specs import SPECS  # noqa: E402
 from inventory_specs_full import SPECS_FULL  # noqa: E402
+from inventory_fixes import SPECS_FIX  # noqa: E402
 
 ASSET = Path(__file__).resolve().parents[2]
 REPO = ASSET.parent
@@ -53,9 +55,10 @@ log_lock = threading.Lock()
 def build_jobs(phase):
     """Return job dicts {id, out, kind, prompt, refs} for the requested phase ('1', '2', 'all')."""
     jobs = []
-    for ph, sid, folder, slug, kind, subject, extra in SPECS + SPECS_FULL:
+    for ph, sid, folder, slug, kind, subject, extra in SPECS + SPECS_FULL + SPECS_FIX:
         prompt = f"{STYLE}\nScript ID {sid}. {subject}.\n{TAILS[kind]}"
-        jobs.append(dict(phase=ph, id=sid, out=f"{folder}/{sid}_{slug}_v1.png", kind=kind,
+        name = slug if re.search(r"_v\d+$", slug) else f"{slug}_v1"
+        jobs.append(dict(phase=ph, id=sid, out=f"{folder}/{sid}_{name}.png", kind=kind,
                          prompt=prompt, refs=extra + TRIALS))
     props = json.loads((ASSET / "production" / "props-prompts.json").read_text(encoding="utf-8"))
     for p in props:
@@ -124,7 +127,9 @@ def main():
     ap.add_argument("--skip-first", type=int, default=0,
                     help="skip N leading pending jobs still in flight from a previous runner")
     args = ap.parse_args()
-    jobs = [j for j in build_jobs(args.phase) if validate(j)][args.skip_first:]
+    retired = {p.name for p in (ASSET / "production" / "superseded").glob("*.png")}
+    jobs = [j for j in build_jobs(args.phase)
+            if Path(j["out"]).name not in retired and validate(j)][args.skip_first:]
     print(f"{len(jobs)} jobs pending", flush=True)
     if args.dry_run:
         for j in jobs:
