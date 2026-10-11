@@ -5,9 +5,11 @@
  */
 import {clamp, lerp, ease, progress} from '../kit.js';
 import {backdrop} from './backdrop.js';
-import {groundSprite, runner, scatterBodies, bounds} from './figures.js';
+import {groundSprite, runner, scatterBodies, bounds, contact} from './figures.js';
 import {snow, crows, perchedCrows, tracers, clods, puff} from './particles.js';
 import {BODY_KEYS} from './assets.js';
+import {createRunGround} from '../runground.js';
+import {HORIZON, EYE} from './camera.js';
 
 const MG_START = 12.3, DROP = 12.6;
 // Window opening and MG muzzle inside PR-21 v1, source px.
@@ -24,6 +26,8 @@ const BODIES = scatterBodies(BODY_KEYS, 11, 3, {near: 9, far: 125, side: 2400});
 const POSTS = Array.from({length: 9}, (_, i) => ({z0: 6 + i * 13, X: (i % 2 ? 1 : -1) * (1700 + (i % 3) * 260), key: `post${1 + i % 3}`}));
 
 export function createFieldA(art, reducedMotion) {
+  // Streaming snowy-mud plane from the plate's near rows (blurred and mirrored once).
+  const ground = createRunGround(art.bgA, {sy: 640, sh: 384, fog: '168,172,178'});
   /** Distance travelled since scene time ref. */
   const since = (f, ref) => f.d - f.plan.at(ref).d;
   const barnZ = f => 40 - since(f, f.shots[0].start);
@@ -90,7 +94,12 @@ export function createFieldA(art, reducedMotion) {
 
   function render(comp, f) {
     const dA = f.d;
-    comp.draw(c => backdrop(c, art.bgA, {horizon: .405, zoom: 1 + dA * .0022}));
+    // First layer: the colour pass is still empty, so its erase draw is skipped.
+    comp.draw((c, pass) => {
+      if (pass === 'colour') return;
+      backdrop(c, art.bgA, {horizon: .405, zoom: 1 + dA * .0022});
+      ground.draw(c, dA, {horizon: HORIZON, top: 560, eye: f.eye / EYE, feather: 70});
+    });
     comp.draw(c => {
       const {box, win} = barnBox(c, f, true);
       gunner(c, f, win); slumped(c, f, win);
@@ -101,14 +110,17 @@ export function createFieldA(art, reducedMotion) {
     comp.draw(c => crows(c, art.crows, f.wt - f.plan.at(MG_START).wt, {reducedMotion}));
     comp.draw(c => {
       clods(c, dA, f.eye, {seed: 2});
+      for (const b of BODIES) { const z = b.z0 - dA; if (z > .7 && z < 60) contact(c, f, z, b.X, 1.9); }
       for (const b of BODIES) { const z = b.z0 - dA; if (z > .7 && z < 60) groundSprite(c, art[b.key], {z, X: b.X, w: b.w, eye: f.eye, flip: b.flip}); }
       const zw = 7 - since(f, 5);
       if (zw > .5 && zw < 40) {
+        contact(c, f, zw + .3, -1700, .5); contact(c, f, zw, -1250, 1.2);
         groundSprite(c, art.post1, {z: zw + .3, X: -1700, h: 1.5, eye: f.eye});
         groundSprite(c, art.wounded, {z: zw, X: -1250, h: 1.2 * (1 + Math.sin(f.wt * 2.4) * .01), eye: f.eye});
       }
       GIS.map((g, i) => [g, i, g.fall !== null && f.t >= g.fall ? g.z - since(f, g.fall) : g.z])
-        .sort((a, b) => b[2] - a[2]).forEach(([g, i]) => drawGI(c, f, g, i));
+        .sort((a, b) => b[2] - a[2]).forEach(([g, i, z]) => { contact(c, f, z, g.X, .9); drawGI(c, f, g, i); });
+      for (const p of POSTS) { const z = p.z0 - dA; if (z > .5 && z < 40) contact(c, f, z, p.X, .5); }
       for (const p of POSTS) { const z = p.z0 - dA; if (z > .5 && z < 40) groundSprite(c, art[p.key], {z, X: p.X, h: 1.4, eye: f.eye}); }
     });
     const flash = mgFlash(f);

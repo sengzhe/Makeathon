@@ -85,18 +85,34 @@ export async function playScene(stage, {reducedMotion = false, review = false, i
     const retry = document.createElement('button'); retry.textContent = 'Retry';
     retry.addEventListener('click', () => jump(index), {signal:lifetime.signal}); message.append(retry);
   }
+  const warmed = new Map();
+  /** Fetch and decode a scene's images ahead of its cut so the swap needs no loading pause. */
+  function warm(assets = {}) {
+    for (const path of Object.values(assets)) {
+      const url = new URL(path, assetBase).href;
+      if (warmed.has(url)) continue;
+      const image = new Image(); image.src = url; image.decode?.().catch(() => {});
+      warmed.set(url, image);
+    }
+  }
   function preload() {
     nextModule = null;
     const expected = index + 1;
     if (!scenes[expected]) return;
     // Import is speculative. The next scene's assets decode under opaque coverage.
-    scenes[expected].load().then(module => {if (index + 1 === expected) nextModule = module;}, () => {});
+    scenes[expected].load().then(module => {
+      if (index + 1 !== expected) return;
+      nextModule = module; warm(module.assets);
+    }, () => {});
   }
   async function mount(target, module, handoff) {
     const ticket = ++generation;
     busy = true; currentAbort?.abort();
     const controller = new AbortController(); currentAbort = controller;
-    message.hidden = false; message.textContent = 'Loading the scene…';
+    // Only announce loading if it is noticeably slow; normal swaps stay silent.
+    message.hidden = true; message.textContent = 'Loading the scene…';
+    const slow = setTimeout(() => {if (ticket === generation && busy) message.hidden = false;}, 1200);
+    controller.signal.addEventListener('abort', () => clearTimeout(slow));
     const root = document.createElement('div'); root.className = 'film-scene'; root.dataset.scene = String(target);
     let scene;
     try {

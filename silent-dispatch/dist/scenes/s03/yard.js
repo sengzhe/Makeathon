@@ -12,8 +12,9 @@ let runGround = null;
 const START = 6;
 /** Distance of a static world object that was z0 metres away at 0:06. */
 const near = (z0, t) => z0 - GROUND.v * (t - START);
-const CRATER = {X: 760, z0: 22}, CART = {X: -980, z0: 27}, SERGEANT = {X: -430, z0: 17};
-const GI = [{X: 250, z: 9, phase: 0}, {X: -300, z: 12.5, phase: .17}];
+const CRATER = {X: -700, z0: 22}, CART = {X: -980, z0: 27}, SERGEANT = {X: -430, z0: 17};
+// The far GI runs for the open gateway; the crater sits left, clear of the rifle.
+const GI = [{X: -150, z: 9, phase: 0}, {X: 500, z: 12.5, phase: .17}];
 
 /** Camera for the yard: run bob, sway and roll (no drift). */
 export function yardCamera(t, reducedMotion) {
@@ -25,7 +26,10 @@ export function yardCamera(t, reducedMotion) {
 function backdrop(c, t, art) {
   const k = lerp(1.25, 1.32, progress(t, START, 18.5)), bg = art.yard;
   const x = clamp(1150 - 980 * k, W - bg.width * k, 0);
-  c.drawImage(bg, x - 40, GROUND.yh - 390 * k, bg.width * k + 80, bg.height * k);
+  const ox = x - 40, oy = GROUND.yh - 390 * k, sx = (bg.width * k + 80) / bg.width;
+  c.drawImage(bg, ox, oy, bg.width * k + 80, bg.height * k);
+  // Open gateway: the painted gate boards are covered by the field band behind them.
+  c.drawImage(bg, 858, 345, 228, 58, ox + 858 * sx, oy + 402 * k, 228 * sx, 110 * k);
   // Streaming perspective ground below the gate line: mud passes under the camera.
   runGround ||= createRunGround(bg, {sy: 640, sh: 380, fog: '120,108,92'});
   runGround.draw(c, GROUND.v * Math.max(0, t - START), {top: GROUND.yh + 175, fogDepth: 40});

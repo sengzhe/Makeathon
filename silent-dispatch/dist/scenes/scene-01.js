@@ -1,9 +1,9 @@
 /**
- * S1 Breakfast — local 0:00–0:45, production script HD-01…HD-07.
+ * S1 Breakfast — local 0:00–0:42, production script HD-01…HD-07.
  * The player owns time, input, transport, transitions and the >=42s advance gate.
  * Preview limits: no recorded AU assets yet; newspaper glyphs are source artwork;
- * the contact insert is a cropped palm-up trial, not an approved contact viewpoint.
- * Replace that crop when a selected contact state exists; never articulate fingers.
+ * the pocket insert holds the HD-K4 flat-press left hand as one whole image (same
+ * placement as Scene 3's HD-06 insert); never articulate fingers or clip the hand.
  */
 export const assets = {
   newspaper: 'scene-01/PR-01-newspaper-front-v2.png',
@@ -16,8 +16,9 @@ export const assets = {
   ration: 'scene-01/PR-03-ration-tin-spoon-v1.png',
   helmet: 'props/PR-07_m1_helmet_upside_down_v1.png',
   chest: 'props/PR-14_jacket-chest_clean_v1.png',
+  press: 'hands/HD-K4_hand-left-flat-press_v2.png',
 };
-const W = 1920, H = 1080;
+const W = 1920, H = 1080, HAND_Y = 360;
 const clamp = (n, a = 0, b = 1) => Math.max(a, Math.min(b, n));
 const ease = n => { n = clamp(n); return n * n * (3 - 2 * n); };
 const progress = (t, a, b) => ease((t - a) / (b - a));
@@ -164,11 +165,13 @@ export async function mountScene({ root, assetBase, reducedMotion = false, signa
     c.drawImage(art.chest,art.chest.width*.15,art.chest.height*.60,art.chest.width*.28,art.chest.height*.23,150,462,840,518);
     c.restore();
     if (t>=39) {
-      // Crop-only contact study. Fingers remain below the lower framing edge;
-      // an approved palm-down/contact source is still needed for final production.
-      const settle=reducedMotion?0:(1-progress(t,39,39.5))*12;
-      c.save();c.translate(1300,790+settle);c.rotate(.93);c.scale(-1,1);
-      c.drawImage(art.hands,art.hands.width*.035,art.hands.height*.39,art.hands.width*.47,art.hands.height*.57,-310,0,560,680);
+      // HD-K4 contact state, held whole: rises from the lower edge, then a small settle.
+      const rise=reducedMotion?0:(1-progress(t,39,39.45))*560;
+      const settle=reducedMotion?0:(1-progress(t,39.35,39.8))*12;
+      const w=760, h=w*art.press.height/art.press.width;
+      c.save();c.translate(1330,HAND_Y+rise+settle);c.rotate(-.12);
+      c.shadowColor='rgba(10,8,5,.45)';c.shadowBlur=24;c.shadowOffsetY=14;
+      c.drawImage(art.press,-w/2,0,w,h);
       c.restore();
     }
   }
@@ -194,7 +197,7 @@ export async function mountScene({ root, assetBase, reducedMotion = false, signa
   }
   function render({time=0, pointer={x:0,y:0}} = {}) {
     if(disposed || signal?.aborted)return;
-    const t=clamp(time,0,45);lastTime=t;
+    const t=clamp(time,0,42);lastTime=t;
     c.clearRect(0,0,W,H);
     if(t<3) {ctx.fillStyle='#080807';ctx.fillRect(0,0,W,H);return;}
     const inLetter=t>=17&&t<34.2;
@@ -203,7 +206,7 @@ export async function mountScene({ root, assetBase, reducedMotion = false, signa
     if(t<12.6) newspaper(t);
     else if(t<17) foldedLetter();
     else if(t<34.2) g=openLetter(t,progress(t,33,34.2));
-    else if(t<42) pocket(t);
+    else pocket(t);
     // T-PAPER passes directly over the lens; the insert cut happens at coverage.
     if(t>=12.25&&t<13.1) {
       const phase=(t-12.25)/.85;

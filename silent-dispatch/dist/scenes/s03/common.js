@@ -18,6 +18,13 @@ export function ground(z, X, yh = GROUND.yh) {
   return {s, x: GROUND.xc + X * s, y: yh + (GROUND.y0 - yh) * s};
 }
 
+/** Soft elliptical contact shadow at a ground point, sized to the sprite width. */
+function contact(c, g, w) {
+  c.save(); c.fillStyle = 'rgba(20,16,12,.32)';
+  c.beginPath(); c.ellipse(g.x, g.y, w * .32, Math.max(2, w * .05), 0, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+
 /**
  * Draw an L4 sprite standing on the ground plane, bottom-centre at its feet.
  * height is the drawn height in px at 100% scale (5 m); foot is the image row
@@ -26,6 +33,7 @@ export function ground(z, X, yh = GROUND.yh) {
 export function groundSprite(c, img, z, X, height, {a = 1, r = 0, lift = 0, foot = .98, flip = false} = {}) {
   if (z <= .2 || a <= 0) return null;
   const g = ground(z, X), h = height * g.s, w = h * img.width / img.height;
+  contact(c, g, w);
   c.save(); c.globalAlpha *= a; c.translate(g.x, g.y - lift * g.s); c.rotate(r);
   if (flip) c.scale(-1, 1);
   c.drawImage(img, -w / 2, -h * foot, w, h);

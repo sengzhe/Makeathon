@@ -30,10 +30,10 @@ export function bounds(img) {
  * the alpha box), eye, flip, r (radians about the feet), a, lift (metres), sink
  * (fraction of the box pushed below the feet line), dry (measure only). Returns the screen box.
  */
-export function groundSprite(c, img, {z, X = 0, h, w, eye, flip = false, r = 0, a = 1, lift = 0, sink = 0, dry = false}) {
+export function groundSprite(c, img, {z, X = 0, h, w, eye, flip = false, r = 0, a = 1, lift = 0, sink = 0, dry = false, flat = 1}) {
   const p = project(z, X, eye), b = bounds(img);
   const k = h ? h * p.m / b.h : w * p.m / b.w;
-  const dw = b.w * k, dh = b.h * k, x = p.x, y = p.y - lift * p.m + sink * dh;
+  const dw = b.w * k, dh = b.h * k * flat, x = p.x, y = p.y - lift * p.m + sink * dh;
   if (dry) return {x: x - dw / 2, y: y - dh, w: dw, h: dh, cx: x, feet: y, m: p.m};
   c.save(); c.globalAlpha *= a; c.translate(x, y); c.rotate(r);
   if (flip) c.scale(-1, 1);
@@ -104,4 +104,13 @@ export function scatterBodies(keys, count, seed, {near = 6, far = 46, side = 260
     list.push({key: keys[(i + seed) % keys.length], z0: near + (far - near) * r, X: sideSign * (380 + q * side), flip: q > .5, w: 1.75});
   }
   return list;
+}
+
+/** Soft contact shadow under a ground point; width in metres. */
+export function contact(c, f, z, X, width) {
+  if (z <= .5) return;
+  const p = f.project(z, X), w = width * p.m;
+  c.save(); c.fillStyle = 'rgba(18,16,14,.3)';
+  c.beginPath(); c.ellipse(p.x, p.y, w * .5, Math.max(2, w * .09), 0, 0, Math.PI * 2); c.fill();
+  c.restore();
 }

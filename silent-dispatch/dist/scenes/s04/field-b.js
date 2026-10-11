@@ -4,11 +4,15 @@
  */
 import {clamp, lerp, ease, surface} from '../kit.js';
 import {backdrop} from './backdrop.js';
-import {groundSprite, scatterBodies, bounds} from './figures.js';
+import {groundSprite, scatterBodies, bounds, contact} from './figures.js';
+import {createRunGround} from '../runground.js';
+import {HORIZON, EYE} from './camera.js';
 import {snow, clods, puff} from './particles.js';
 import {BODY_KEYS} from './assets.js';
 
 const BODIES = scatterBodies(BODY_KEYS, 14, 11, {near: 5, far: 78, side: 2600});
+// Crater art is drawn from above; flatten it for the ground-level eye so it reads as a hollow.
+const CRATER_FLAT = .42;
 const CRATERS = [{z0: 14, X: -1500, k: 'craterBowl2', w: 5}, {z0: 33, X: 1700, k: 'craterBowl3', w: 6}, {z0: 52, X: -900, k: 'craterBowl2', w: 4.5}, {z0: 66, X: 2100, k: 'craterBowl3', w: 5}];
 export const PHOTO_SPLASH = 73.2;
 // Karl stands on the far rim so the fire outlines him above the bowl.
@@ -23,15 +27,17 @@ function silhouette(img) {
 
 export function createFieldB(art, reducedMotion) {
   const karlDark = silhouette(art.karl);
+  // Streaming churned-mud plane from the plate's near rows (blurred and mirrored once).
+  const ground = createRunGround(art.bgB, {sy: 620, sh: 404, fog: '128,118,104'});
   const since = (f, ref) => f.d - f.plan.at(ref).d;
   const craterZ = f => 20 - since(f, f.shots[1].start);
 
   /** Crater bowl and near lip share one registration; returns the mapping. */
   function craterMap(f, z) {
     const p = f.project(z, 0), b = bounds(art.craterBowl), k = 7.2 * p.m / b.w;
-    return {x: p.x - (b.x + b.w / 2) * k, y: p.y - (b.y + b.h) * k, k, p};
+    return {x: p.x - (b.x + b.w / 2) * k, y: p.y - (b.y + b.h) * k * CRATER_FLAT, k, p};
   }
-  const craterImg = (c, img, m) => c.drawImage(img, m.x, m.y, img.width * m.k, img.height * m.k);
+    const craterImg = (c, img, m) => c.drawImage(img, m.x, m.y, img.width * m.k, img.height * m.k * CRATER_FLAT);
 
   /** Karl's vertical offset in metres: rises before the shot, drops after it. */
   function karlLift(f) {
@@ -47,6 +53,7 @@ export function createFieldB(art, reducedMotion) {
 
   function crater(c, f, cz) {
     const m = craterMap(f, cz), karl = karlLift(f);
+    contact(c, f, cz - .3, 0, 7.6);
     craterImg(c, art.craterBowl, m);
     craterImg(c, art.craterLip, m);
     if (karl > -1.25 && f.t < f.shots[1].fire + 1) {
@@ -60,14 +67,20 @@ export function createFieldB(art, reducedMotion) {
 
   function render(comp, f) {
     const dB = since(f, 40), cz = craterZ(f);
-    comp.draw(c => backdrop(c, art.bgB, {horizon: .33, zoom: 1 + dB * .003}));
+    // First layer: the colour pass is still empty, so its erase draw is skipped.
+    comp.draw((c, pass) => {
+      if (pass === 'colour') return;
+      backdrop(c, art.bgB, {horizon: .33, zoom: 1 + dB * .003});
+      ground.draw(c, dB, {horizon: HORIZON, top: 590, eye: f.eye / EYE, feather: 80});
+    });
     comp.draw(c => {
       clods(c, dB, f.eye, {seed: 7});
-      for (const cr of CRATERS) { const z = cr.z0 - dB; if (z > 1 && z < 70) groundSprite(c, art[cr.k], {z, X: cr.X, w: cr.w, eye: f.eye, sink: .35}); }
+      for (const b of BODIES) { const z = b.z0 - dB; if (z > .9 && z < 70 && Math.abs(z - cz) > 2) contact(c, f, z, b.X, 1.9); }
+      for (const cr of CRATERS) { const z = cr.z0 - dB; if (z > 1 && z < 70 && !(Math.abs(z - cz) < 9 && Math.abs(cr.X) < 2600)) groundSprite(c, art[cr.k], {z, X: cr.X, w: cr.w, eye: f.eye, sink: .2, flat: CRATER_FLAT}); }
       for (const b of BODIES) { const z = b.z0 - dB; if (z > .9 && z < 70 && Math.abs(z - cz) > 2) groundSprite(c, art[b.key], {z, X: b.X, w: b.w, eye: f.eye, flip: b.flip}); }
     });
     if (cz > 1.2) {
-      comp.draw(c => { fire(c, f, cz + 4, 0, 5.2, art.fireL, 1); fire(c, f, cz + 6, -900, 2.4, art.fireS, 2); fire(c, f, cz + 5, 1100, 2.8, art.fireM, 3); }, true);
+      comp.draw(c => { fire(c, f, cz + 4, 0, 5.2, art.fireL, 1); fire(c, f, cz + 6, -900, 2.4, art.fireS, 2); fire(c, f, cz + 5, 1100, 2.2, art.fireS, 3); }, true);
       comp.draw(c => crater(c, f, cz));
     } else comp.draw(c => groundSprite(c, art.karlDead, {z: Math.max(cz - 2.1, .5), X: -120, w: 2.1, eye: f.eye, sink: .25}));
     comp.draw(c => snow(c, f.wt, {reducedMotion}));

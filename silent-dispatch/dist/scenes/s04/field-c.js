@@ -5,12 +5,30 @@
  */
 import {clamp, lerp, ease, surface} from '../kit.js';
 import {backdrop} from './backdrop.js';
-import {groundSprite, scatterBodies, flareShadow} from './figures.js';
+import {groundSprite, scatterBodies, flareShadow, contact} from './figures.js';
+import {createRunGround} from '../runground.js';
+import {HORIZON, EYE} from './camera.js';
 import {snow, embers, clods} from './particles.js';
 import {BODY_KEYS} from './assets.js';
 
-const BODIES = scatterBodies(BODY_KEYS, 16, 23, {near: 4, far: 40, side: 2900});
 const MEDIC = {z0: 29, X: -1500}, WALL = {z0: 38, X: -500}, FOX = {z0: 26, X: 1300}, CAR = {z0: 44, X: 1500};
+const M = 362; // px per metre at z0, for sideways distances
+
+/**
+ * Bodies kept clear of the medic group, foxhole, wall and vehicle, and at least
+ * 2 m from each other, so no two sprites heap into one pile.
+ */
+function spreadBodies() {
+  const keep = [], clear = [[MEDIC, 8, 3400], [FOX, 5, 1700], [CAR, 4, 2200]];
+  for (const b of scatterBodies(BODY_KEYS, 22, 23, {near: 4, far: 40, side: 2900})) {
+    if (clear.some(([o, dz, dx]) => Math.abs(b.z0 - o.z0) < dz && Math.abs(b.X - o.X) < dx)) continue;
+    if (b.z0 > WALL.z0 - 6 && Math.abs(b.X - WALL.X) < 2200) continue;
+    if (keep.some(k => (k.z0 - b.z0) ** 2 + ((k.X - b.X) / M) ** 2 < 4)) continue;
+    keep.push(b);
+  }
+  return keep.slice(0, 14);
+}
+const BODIES = spreadBodies();
 export const FLARE = {rise: 86, hang: 87, fade: 101, dead: 103.8};
 
 /** Orange side light clipped to the boy's alpha, prepared once (coloured pass). */
@@ -39,6 +57,8 @@ export function createFieldC(art, reducedMotion) {
   const boyGlow = sideLight(art.boy);
   const since = (f, ref) => f.d - f.plan.at(ref).d;
   const z = (f, z0) => z0 - since(f, 75);
+  // Streaming frozen mud and snow from the near rows of the L4 ground plate.
+  const ground = createRunGround(art.bgCground, {sy: 640, sh: 384, fog: '150,152,156', blur: 2.4});
 
   /** Wall soldier: crouched on the wall, drops behind it, rises to aim, drops after the shot. */
   function soldier(c, f, wz, light) {
@@ -60,6 +80,13 @@ export function createFieldC(art, reducedMotion) {
     const s = f.shots[2], up = ease((f.t - s.fire - 2) / .6) * (1 - ease((f.t - s.fire - 5.5) / .8));
     const nod = Math.sin(clamp((f.t - s.fire - 3) / .55) * Math.PI) * .2;
     const breathe = reducedMotion ? 0 : Math.sin(f.wt * 2) * .006;
+    // One wounded man lying just beyond the medic, on his left (the side his arms reach to), so the medic kneels over him.
+    const pz = mz + .3, pX = MEDIC.X - 600;
+    contact(c, f, pz, pX, 2.0);
+    const pt = groundSprite(c, art.patient, {z: pz, X: pX, w: 1.9, eye: f.eye, dry: true});
+    flareShadow(c, art.patient, pt, flarePos(f.t).x, light);
+    groundSprite(c, art.patient, {z: pz, X: pX, w: 1.9, eye: f.eye});
+    contact(c, f, mz, MEDIC.X, 1.1);
     const body = groundSprite(c, art.medicBody, {z: mz, X: MEDIC.X, h: 1.2 * (1 + breathe), eye: f.eye, dry: true});
     flareShadow(c, art.medicBody, body, flarePos(f.t).x, light);
     groundSprite(c, art.medicBody, {z: mz, X: MEDIC.X, h: 1.2 * (1 + breathe), eye: f.eye});
@@ -68,15 +95,12 @@ export function createFieldC(art, reducedMotion) {
     c.rotate(lerp(.32, -.04, up) + nod);
     c.drawImage(art.medicHead, -691 * hk, -1079 * hk, art.medicHead.width * hk, art.medicHead.height * hk);
     c.restore();
-    const pt = groundSprite(c, art.patient, {z: mz - .7, X: MEDIC.X + 250, w: 1.9, eye: f.eye, dry: true});
-    flareShadow(c, art.patient, pt, flarePos(f.t).x, light);
-    groundSprite(c, art.patient, {z: mz - .7, X: MEDIC.X + 250, w: 1.9, eye: f.eye});
   }
 
   /** Boy in the foxhole: visible for 18 frames after the long muzzle flash. */
   function foxhole(c, f, fz, coloured) {
     const at = Math.max(f.shots[2].fire + 4.6, 100.4), u = (f.t - at) / (18 / 24);
-    if (!coloured) groundSprite(c, art.foxBowl, {z: fz + .5, X: FOX.X, w: 2.6, eye: f.eye, sink: .3});
+    if (!coloured) { contact(c, f, fz + .2, FOX.X, 3.2); groundSprite(c, art.foxBowl, {z: fz + .5, X: FOX.X, w: 2.6, eye: f.eye, sink: .25, flat: .7}); }
     if (u > 0 && u < 1) {
       const show = ease(clamp(u / .2)) * (1 - ease(clamp((u - .8) / .2)));
       const opts = {z: fz + .3, X: FOX.X - 40, h: .95, eye: f.eye, sink: lerp(.55, .08, show)};
@@ -84,6 +108,22 @@ export function createFieldC(art, reducedMotion) {
       else groundSprite(c, art.boy, opts);
     }
     if (!coloured) groundSprite(c, art.foxRim, {z: fz, X: FOX.X, w: 2.8, eye: f.eye, sink: .2});
+  }
+
+  /** One scattered body with its contact and flare shadows. */
+  function body(c, f, b, bz, fx, light) {
+    contact(c, f, bz, b.X, 1.9);
+    const box = groundSprite(c, art[b.key], {z: bz, X: b.X, w: b.w, eye: f.eye, flip: b.flip, dry: true});
+    flareShadow(c, art[b.key], box, fx, light * .7);
+    groundSprite(c, art[b.key], {z: bz, X: b.X, w: b.w, eye: f.eye, flip: b.flip});
+  }
+
+  /** Smoke half hiding the foxhole. */
+  function fogSmoke(c, f, fz) {
+    const sp = f.project(fz + .6, FOX.X), sw = 4.2 * sp.m;
+    c.save(); c.globalAlpha = .55;
+    c.drawImage(art.smoke2, sp.x - sw * .55 + Math.sin(f.wt * .3) * 30, sp.y - sw * .3, sw, sw * art.smoke2.height / art.smoke2.width);
+    c.restore();
   }
 
   function fireOn(c, f, cz) {
@@ -102,34 +142,31 @@ export function createFieldC(art, reducedMotion) {
 
   function render(comp, f) {
     const dC = since(f, 75), light = flareLevel(f.t), fx = flarePos(f.t).x;
-    comp.draw(c => {
+    // First layer: the colour pass is still empty, so its erase draw is skipped.
+    comp.draw((c, pass) => {
+      if (pass === 'colour') return;
       backdrop(c, art.bgCsky, {horizon: .9, zoom: 1});
       backdrop(c, art.bgCfar, {horizon: .5, zoom: 1 + dC * .004});
-      backdrop(c, art.bgCground, {horizon: .46, zoom: 1 + dC * .02});
+      ground.draw(c, dC, {horizon: HORIZON, top: HORIZON + 14, eye: f.eye / EYE, feather: 50});
     });
     comp.draw(c => drawFlare(c, f), true);
     const cz = z(f, CAR.z0), wz = z(f, WALL.z0), mz = z(f, MEDIC.z0), fz = z(f, FOX.z0);
     comp.draw(c => {
-      flareShadow(c, art.vehicle, groundSprite(c, art.vehicle, {z: cz, X: CAR.X, w: 4.2, eye: f.eye, dry: true}), fx, light);
-      groundSprite(c, art.vehicle, {z: cz, X: CAR.X, w: 4.2, eye: f.eye});
+      contact(c, f, cz, CAR.X, 4.8);
+      flareShadow(c, art.vehicle, groundSprite(c, art.vehicle, {z: cz, X: CAR.X, w: 4.2, eye: f.eye, sink: .04, dry: true}), fx, light);
+      groundSprite(c, art.vehicle, {z: cz, X: CAR.X, w: 4.2, eye: f.eye, sink: .04});
     });
     comp.draw(c => fireOn(c, f, cz), true);
     comp.draw(c => {
-      soldier(c, f, wz, light);
-      groundSprite(c, art.wall, {z: wz, X: WALL.X, w: 6.5, eye: f.eye});
       clods(c, dC, f.eye, {seed: 13});
+      // Painter's order far to near so bodies never overlap the wall or the medic group.
+      const items = [[wz, () => { soldier(c, f, wz, light); contact(c, f, wz, WALL.X, 6.8); groundSprite(c, art.wall, {z: wz, X: WALL.X, w: 6.5, eye: f.eye}); }],
+        [mz, () => medic(c, f, mz, light)], [fz, () => { foxhole(c, f, fz, false); fogSmoke(c, f, fz); }]];
       for (const b of BODIES) {
         const bz = b.z0 - dC;
-        // Keep the medic group and the foxhole clear of scattered bodies.
-        if (bz < .9 || (Math.abs(b.z0 - MEDIC.z0) < 5 && Math.abs(b.X - MEDIC.X) < 1500) || (Math.abs(b.z0 - FOX.z0) < 5 && Math.abs(b.X - FOX.X) < 1500)) continue;
-        const box = groundSprite(c, art[b.key], {z: bz, X: b.X, w: b.w, eye: f.eye, flip: b.flip, dry: true});
-        flareShadow(c, art[b.key], box, fx, light * .7);
-        groundSprite(c, art[b.key], {z: bz, X: b.X, w: b.w, eye: f.eye, flip: b.flip});
+        if (bz >= .9) items.push([bz, () => body(c, f, b, bz, fx, light)]);
       }
-      medic(c, f, mz, light);
-      foxhole(c, f, fz, false);
-      const sp = f.project(fz + .6, FOX.X), sw = 4.2 * sp.m;
-      c.globalAlpha = .55; c.drawImage(art.smoke2, sp.x - sw * .55 + Math.sin(f.wt * .3) * 30, sp.y - sw * .3, sw, sw * art.smoke2.height / art.smoke2.width);
+      items.sort((a, b) => b[0] - a[0]).forEach(([, draw]) => draw());
     });
     comp.draw(c => foxhole(c, f, fz, true), true);
     comp.draw(c => embers(c, f.wt, {reducedMotion}), true);
