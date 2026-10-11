@@ -2,7 +2,7 @@
  * S5 The Grenade — local 0:00–0:30, production script Scene 5 and HD-15.
  * 0:00 grenade lands two steps ahead · 0:00.5 slow motion 0.1 and the final reach ·
  * 0:02 T-FLASH (hands and rifle never return) · 0:02.5 BG-06 at mud level, rotated 70° ·
- * 0:05–0:10 natural colour returns · 0:07–0:14 crayon run · 0:10–0:14 the boy ·
+ * 0:05–0:10 natural colour returns · 0:07–0:14 crayon run ·
  * 0:15–0:20 the medic and the letter · 0:20–0:25 iris to the star · 0:25–0:30 black.
  * Clicks do nothing in this scene; the player's canAdvance already refuses s5.
  * No AU assets exist yet; sound cues are left to the player when they do.
@@ -35,7 +35,7 @@ export async function mountScene({root, assetBase, reducedMotion = false, signal
   const ctx = canvas.getContext('2d'), c = frame.getContext('2d'), f = fore.getContext('2d');
   if (!ctx || !c || !f) throw new Error('Scene 5 requires Canvas 2D');
   canvas.className = 'film-canvas';
-  canvas.setAttribute('aria-label', 'The grenade. A grenade lands ahead; Tommy reaches for the letter in his pocket. White. From the ground, colour returns, the crayon runs, a frightened boy in a foxhole, and a medic holding the letter with its yellow star.');
+  canvas.setAttribute('aria-label', 'The grenade. A grenade lands ahead; Tommy reaches for the letter in his pocket. White. From the ground, colour returns, the crayon runs, and a medic holding the letter with its yellow star.');
   canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;';
   root.append(canvas);
   let disposed = false, lastTime = 0;
@@ -87,7 +87,7 @@ export async function mountScene({root, assetBase, reducedMotion = false, signal
     render,
     // Clicks are deliberately inert for the whole scene: control is taken away.
     onAction: () => 'handled',
-    getHandoff: () => ({...handoff, location: 'black', tommy: 'killed', letter: 'held-by-medic', star: 'yellow', boy: 'alive', sceneTime: lastTime}),
+    getHandoff: () => ({...handoff, location: 'black', tommy: 'killed', letter: 'held-by-medic', star: 'yellow', sceneTime: lastTime}),
     dispose() { disposed = true; canvas.remove(); frame.width = 0; fore.width = 0; },
   };
 }

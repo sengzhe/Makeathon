@@ -1,6 +1,6 @@
 /**
  * S5 0:02.5–0:15 — BG-06 at mud level, frame rotated 70°: snow toward the lens,
- * the frozen grass blade, the boy at the foxhole, and the letter half out of the pocket
+ * and the letter half out of the pocket
  * with the FX-26 crayon run. Colour grading is applied by the caller.
  */
 import {W, H, clamp, lerp, progress, hash} from '../kit.js';
@@ -34,44 +34,10 @@ function plate(c, art) {
   c.fillStyle = seam; c.fillRect(-pw / 2, top, pw, 160);
 }
 
-/**
- * SP-09 boy behind the PR-22 rim: rises into view, holds a frightened face with a small
- * shoulder tremor, then lowers into cover. Clipped above the rim base so he never shows below it.
- */
-function boy(c, art, t, reducedMotion) {
-  if (t < 9.4 || t > 14.2) return;
-  const x = 120, base = HORIZON + 230, scale = .42, sink = 70;
-  const up = progress(t, 9.4, 10.4) * (1 - progress(t, 13.1, 14.1));
-  const tremor = reducedMotion ? 0 : Math.sin(t * 31) * 1.6 + Math.sin(t * 17) * 1.1;
-  const bw = art.boyBody.width * scale, bh = art.boyBody.height * scale;
-  const rimW = 880, rimH = rimW * art.rim.height / art.rim.width;
-  c.save();
-  c.beginPath(); c.rect(x - rimW, base - 600, rimW * 2, 600 + rimH * .2); c.clip();
-  c.translate(x, base + (1 - up) * 300);
-  c.save(); c.translate(tremor, 0);
-  c.drawImage(art.boyBody, -bw * .5, -bh * .62 + sink, bw, bh);
-  c.restore();
-  const hw = art.boyHead.width * scale * .6, hh = hw * art.boyHead.height / art.boyHead.width;
-  c.save(); c.translate(tremor * .4, -bh * .34 + sink); c.rotate(reducedMotion ? 0 : Math.sin(t * 23) * .008);
-  c.drawImage(art.boyHead, -hw * .51, -hh * .94, hw, hh);
-  c.restore(); c.restore();
-  c.drawImage(art.rim, x - rimW / 2, base - rimH * .45, rimW, rimH);
-}
-
-/** Frozen grass blade at the lens (BG-06 L5), with a slow wind lean. */
-function blade(c, prep, t, reducedMotion) {
-  const b = prep.blade, h = 1900, w = h * b.width / b.height;
-  c.save(); c.translate(-420, LH / 2 + 60); c.rotate(-.2 + (reducedMotion ? 0 : Math.sin(t * .9) * .025));
-  c.drawImage(b, -w * .2, -h * .98, w, h);
-  c.restore();
-}
-
-/** Draw the rotated world: plate, boy and blade. */
+/** Draw the rotated world: the ground plate only (boy and blade removed at review). */
 export function drawGroundWorld(c, art, prep, t, reducedMotion) {
   c.save(); worldFrame(c);
   plate(c, art);
-  boy(c, art, t, reducedMotion);
-  blade(c, prep, t, reducedMotion);
   c.restore();
 }
 

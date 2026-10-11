@@ -8,7 +8,6 @@ import {surface} from '../kit.js';
 export const assets = {
   field: 'backgrounds/BG-05_field-c_color_v1.png',
   plate: 'backgrounds/BG-06_ground_plate-no-blade_v1.png',
-  blade: 'backgrounds/BG-06_ground_L5-grass-blade_v1.png',
   rifle: 'hands/HD-K1_rifle-carry_v1.png',
   hand: 'hands/HD-K4_hand-left-flat-press_v2.png',
   stain: 'effects/FX-23_sleeve-blood_03-full_v1.png',
@@ -20,9 +19,6 @@ export const assets = {
   grenadeAir: 'props/PR-13_stick_grenade_tumble_source_v1.png',
   grenade: 'props/PR-13_stick_grenade_landed_v1.png',
   splash: 'effects/FX-11_mud-splash_v1.png',
-  rim: 'props/PR-22_foxhole_near_rim_v1.png',
-  boyBody: 'characters/SP-09_boy_rig-body_v1.png',
-  boyHead: 'characters/SP-09_boy_rig-head_v1.png',
   medic: 'characters/SP-07_medic_closeup-face_v2.png',
 };
 
@@ -79,7 +75,6 @@ export function prepare(art, reducedMotion) {
     rifle: graded(art.rifle, 'saturate(.25) brightness(.82)'),
     chest: graded(art.chest, 'saturate(.35) brightness(.78)'),
     hand: stainedHand(art),
-    blade: graded(art.blade, reducedMotion ? 'none' : 'blur(2.5px)', .9),
     star: starOnly(art.letterRun),
   };
 }
